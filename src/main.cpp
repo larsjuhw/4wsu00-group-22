@@ -14,19 +14,13 @@ const byte SENSOR_PIN = 2;
 
 const unsigned long period = 1000;
 
-const float targetMilliLitres = 2000.0; // Set at 2 litres for now. Makes testing less wasteful.
-float percentageTowardsTarget;
+const int targetMilliLitres = 2000; // Set at 2 litres for now. Makes testing less wasteful.
+float progressTowardsTarget;
 float nextBuzz = 0.25;
 
 int wifi_status = WL_IDLE_STATUS;
 
 float calibrationFactor = 9.4;
-
-float flowRate;
-unsigned int flowMilliLitres;
-unsigned long totalMilliLitres;
-
-unsigned long oldTime;
 
 void SensorISR() { Meter->count(); }
 // attachInterrupt
@@ -47,11 +41,6 @@ void setup()
     analogWrite(PIN_RED, 0);
     analogWrite(PIN_GREEN, 255);
     analogWrite(PIN_BLUE, 0);
-
-    flowRate          = 0.0;
-    flowMilliLitres   = 0;
-    totalMilliLitres  = 0;
-    oldTime           = 0;
 
     while (wifi_status != WL_CONNECTED)
     {
@@ -74,7 +63,7 @@ void loop()
 
     digitalWrite(LED_BUILTIN, WiFi.status() == WL_CONNECTED ? HIGH : LOW);
 
-    progressTowardsTarget = min(totalMilliLitres / targetMilliLitres, 1.0);
+    progressTowardsTarget = min(Meter->getTotalVolume() / targetMilliLitres, 1.0);
     analogWrite(PIN_RED, 255 * progressTowardsTarget);
     analogWrite(PIN_GREEN, 255 * (1 - progressTowardsTarget));
     if (progressTowardsTarget >= nextBuzz)
